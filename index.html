@@ -289,15 +289,15 @@ function buildQuiz(){
     const item = BANK[idx];
     const wrong = shuffle(item.o.slice(1)).slice(0,2);   // 正确答案固定是原A
     const opts = shuffle([item.o[0], ...wrong]);
-    return { q:item.q, opts, answer: item.o[0] };
+    return { q:item.q, opts, answer: item.o[0], bankIdx: idx };
   });
 }
 
 /* ================= 游戏状态 ================= */
-let quiz = [], cur = 0, score = 0, playerName = "";
+let quiz = [], cur = 0, score = 0, playerName = "", answerLog = [];
 
 function startQuiz(){
-  quiz = buildQuiz(); cur = 0; score = 0;
+  quiz = buildQuiz(); cur = 0; score = 0; answerLog = [];
   $("quiz-name").textContent = "答题人：" + playerName;
   renderQuestion();
   showScreen("screen-quiz");
@@ -326,6 +326,7 @@ function answer(btn, text){
   const item = quiz[cur];
   const correct = text === item.answer;
   if(correct) score++;
+  answerLog.push({ i:item.bankIdx, a:text, ok:correct });
   document.querySelectorAll(".option").forEach(b=>{
     b.disabled = true;
     if(b.dataset.value === item.answer){ b.classList.add("correct"); }
@@ -366,7 +367,7 @@ function supaUrl(path){ return SUPA.url.replace(/\/$/,"") + "/rest/v1" + path; }
 async function submitScore(){
   if(!supaReady()){ saveLocal(); return; }
   try{
-    const body = JSON.stringify({ name:playerName, score:score, device_id:deviceId, updated_at:new Date().toISOString() });
+    const body = JSON.stringify({ name:playerName, score:score, device_id:deviceId, detail:JSON.stringify(answerLog), updated_at:new Date().toISOString() });
     const patch = await fetch(supaUrl(`/scores?device_id=eq.${deviceId}`), { method:"PATCH", headers:supaHeaders(), body });
     if(!patch.ok){ throw new Error("patch failed"); }
     const check = await fetch(supaUrl(`/scores?device_id=eq.${deviceId}&select=device_id`), { headers:supaHeaders() });
