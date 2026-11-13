@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🔥syx铜仁女生涯十问🔥</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body {
+    font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+    background:#FFF6EC;
+    color:#222;
+    display:flex; justify-content:center;
+    overflow-x:hidden;
+  }
+  #app {
+    width:100%; max-width:480px;
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    position:relative;
+  }
+  .screen { display:none; flex:1; flex-direction:column; }
+  .screen.active { display:flex; }
+
+  /* ---------- 手绘风通用元素 ---------- */
+  .sketch-card {
+    background:#fff;
+    border:3px solid #222;
+    border-radius:18px;
+    box-shadow:5px 5px 0 #222;
+  }
+  .btn {
+    display:block; width:100%;
+    padding:14px 18px;
+    background:#fff;
+    border:3px solid #222;
+    border-radius:16px;
+    box-shadow:4px 4px 0 #222;
+    font-size:17px; font-weight:600;
+    color:#222; text-align:left;
+    cursor:pointer;
+    transition:transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform:translate(3px,3px); box-shadow:1px 1px 0 #222; }
+  .btn-primary {
+    background:#FF5D73; color:#fff;
+    text-align:center; font-size:19px;
+    border-radius:20px;
+  }
+  .letter {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:26px; height:26px; margin-right:10px;
+    border:2px solid #222; border-radius:50%;
+    font-size:14px; background:#FFF0F2;
+    flex-shrink:0;
+  }
+
+  /* ---------- 开始页 ---------- */
+  #screen-start { padding:28px 22px; align-items:center; text-align:center; }
+  .main-title {
+    font-size:30px; font-weight:800; line-height:1.35;
+    margin-top:20px;
+  }
+  .hero-wrap {
+    width:100%; margin:24px 0;
+    display:flex; justify-content:center;
+  }
+  .hero-img {
+    width:86%; max-width:340px;
+    border:3px solid #222; border-radius:18px;
+    box-shadow:5px 5px 0 #222;
+    background:#fff;
+  }
+  .sub-tip { font-size:14px; color:#666; margin-bottom:18px; }
+  .name-input {
+    width:100%; padding:14px 16px;
+    font-size:17px;
+    border:3px solid #222; border-radius:16px;
+    box-shadow:4px 4px 0 #222;
+    outline:none; background:#fff;
+    margin-bottom:16px;
+  }
+  .name-input:focus { background:#FFF0F2; }
+  .start-btn { margin-top:4px; }
+
+  /* ---------- 答题页 ---------- */
+  #screen-quiz { }
+  .quiz-hero {
+    height:38vh; min-height:230px; max-height:340px;
+    display:flex; align-items:center; justify-content:center;
+    background:#FFF0F2;
+    border-bottom:3px solid #222;
+    overflow:hidden;
+  }
+  .quiz-hero img { height:100%; width:auto; max-width:100%; object-fit:contain; }
+  .quiz-body {
+    flex:1; padding:16px 18px 20px;
+    display:flex; flex-direction:column;
+  }
+  .quiz-topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:13px; color:#888; margin-bottom:10px;
+  }
+  .progress-track {
+    height:10px; background:#eee; border:2px solid #222;
+    border-radius:8px; overflow:hidden; margin-bottom:14px;
+  }
+  .progress-fill {
+    height:100%; background:#FF5D73;
+    width:0%; transition:width .3s;
+    border-radius:6px;
+  }
+  .question-card { padding:18px 16px; font-size:18px; font-weight:700; line-height:1.5; margin-bottom:16px; }
+  .options { display:flex; flex-direction:column; gap:12px; }
+  .btn.option.correct { background:#7DDB8A; }
+  .btn.option.wrong { background:#FF8A8A; color:#fff; }
+  .btn.option.dim { opacity:.55; }
+  .feedback {
+    margin-top:16px; padding:12px 14px;
+    border:3px solid #222; border-radius:14px;
+    font-size:15px; font-weight:600;
+    display:none;
+  }
+  .feedback.good { background:#E4FBE7; display:block; }
+  .feedback.bad  { background:#FFE4E4; display:block; }
+
+  /* ---------- 结果页 ---------- */
+  #screen-result { padding:32px 22px; align-items:center; text-align:center; justify-content:flex-start; }
+  .result-label { font-size:15px; color:#888; margin-top:26px; }
+  .result-score { font-size:64px; font-weight:900; line-height:1.2; margin-top:4px; }
+  .result-score .unit { font-size:26px; font-weight:800; }
+  .result-tier {
+    font-size:22px; font-weight:800; line-height:1.5;
+    margin:18px 0 6px; padding:18px 14px;
+    background:#fff;
+  }
+  .result-name { font-size:14px; color:#666; margin-bottom:24px; }
+  .result-actions { width:100%; display:flex; flex-direction:column; gap:14px; }
+  .result-actions .btn { text-align:center; font-size:17px; }
+  .btn-leaderboard { background:#FFD34E; }
+
+  /* ---------- 排行榜弹层 ---------- */
+  #overlay {
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.45);
+    display:none; align-items:center; justify-content:center;
+    z-index:50; padding:24px;
+  }
+  #overlay.show { display:flex; }
+  .board-panel {
+    width:100%; max-width:400px; max-height:76vh;
+    display:flex; flex-direction:column;
+    background:#FFF6EC;
+    padding:18px 16px;
+  }
+  .board-title { font-size:20px; font-weight:800; text-align:center; margin-bottom:12px; }
+  .board-list { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .board-row {
+    display:flex; align-items:center; gap:10px;
+    background:#fff; border:2px solid #222; border-radius:12px;
+    padding:10px 12px; font-size:15px;
+  }
+  .board-row.me { background:#FFF0C2; border-width:3px; font-weight:700; }
+  .board-rank { width:30px; text-align:center; font-weight:800; flex-shrink:0; }
+  .board-name { flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .board-score { font-weight:800; color:#FF5D73; }
+  .board-empty { text-align:center; color:#999; font-size:14px; padding:24px 0; }
+  .board-close { margin-top:14px; text-align:center; font-size:16px; }
+  .board-close .btn { text-align:center; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 开始页 -->
+  <div class="screen" id="screen-start">
+    <div class="main-title">🔥syx铜仁女生涯十问🔥</div>
+    <div class="hero-wrap"><img class="hero-img" src="hero.jpg" alt="syx"></div>
+    <div class="sub-tip">到底有多了解 syx？答完这十问就知道了！</div>
+    <input class="name-input" id="name-input" maxlength="12" placeholder="先写下你的名字吧">
+    <button class="btn btn-primary start-btn" id="start-btn">开始答题</button>
+  </div>
+
+  <!-- 答题页 -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-hero"><img src="hero.jpg" alt="syx"></div>
+    <div class="quiz-body">
+      <div class="quiz-topbar">
+        <span id="quiz-count">第 1 / 10 题</span>
+        <span id="quiz-name"></span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="question-card sketch-card" id="question-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+
+  <!-- 结果页 -->
+  <div class="screen" id="screen-result">
+    <div class="result-label">答对题数</div>
+    <div class="result-score"><span id="result-score-num">0</span><span class="unit"> 题</span></div>
+    <div class="result-tier sketch-card" id="result-tier"></div>
+    <div class="result-name" id="result-name"></div>
+    <div class="result-actions">
+      <button class="btn btn-leaderboard" id="board-btn">🏆 查看排行榜</button>
+      <button class="btn" id="retry-btn">再答一次</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- 排行榜 -->
+<div id="overlay">
+  <div class="board-panel sketch-card">
+    <div class="board-title">🏆 全员排行榜</div>
+    <div class="board-list" id="board-list"><div class="board-empty">加载中…</div></div>
+    <div class="board-close"><button class="btn" id="board-close">关闭</button></div>
+  </div>
+</div>
+
+<script>
+/* ================= 配置：Supabase（拿到项目后填这里即可激活云排行榜） =================
+   获取方式：supabase.com 注册 → New project →
+   Project Settings → API 里的 "Project URL" 和 "anon public key" */
+const SUPA = {
+  url: "https://zxufidaltblkzhrobuwt.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dWZpZGFsdGJsa3pocm9idXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1Njg4MjYsImV4cCI6MjExMDE0NDgyNn0.bxEJiDSLfwU5OoWHBGNUbik-QMf6WP8ySlXBdI7N8as"
+};
+/* 表结构：scores(name text, score int, device_id text, updated_at timestamptz) */
+
+/* ================= 题库：正确答案均为原 A 项（options[0]） ================= */
+const BANK = [
+  { q:"syx平时用哪个软件看同人最多？",     o:["Lofter","微博","ao3","小红书"] },
+  { q:"syx磕过的cp大部分是？",             o:["bg","bl","gl","gb"] },
+  { q:"syx最喜欢的动画是？",               o:["进击的巨人","eva新世纪福音战士","钢之炼金术师FA","宝石之国"] },
+  { q:"syx在《银魂》中磕哪一对？",         o:["冲神","银神","双神","银土"] },
+  { q:"syx的本命cp是？",                   o:["林塞","米英","冲神","薰嗣"] },
+  { q:"syx最喜欢的漫画是？",               o:["迷宫饭","跃动青春","死亡笔记","地缚少年花子君"] },
+  { q:"syx人生中扎的第一个痛包是哪对cp？", o:["米英","林塞","冲神","辛芙"] },
+  { q:"syx目前去过的第一个漫展是？",       o:["截至今日还没去过漫展","bilibiliworld","某ip的only展","comicup"] },
+  { q:"syx在《进击的巨人》里最喜欢的角色是？", o:["韩吉","艾伦","阿尔敏","利威尔"] },
+  { q:"syx最喜欢的动漫ost是？",            o:["《进击的巨人》恶魔之子","《家有女友》声嘶力竭","《eva》one last kiss","《紫罗兰永恒花园》Sincerely"] },
+  { q:"syx对于女角色发色的偏好是？",       o:["白毛","粉毛","黑毛","黄毛"] },
+  { q:"syx初中时最喜欢的动漫角色是？",     o:["《魔女之旅》伊蕾娜","《Re0》艾米莉亚","《鬼灭之刃》蝴蝶忍","《孤独摇滚》伊地知虹夏"] },
+  { q:"syx看过的第一部国漫是？",           o:["《刺客伍六七》","《狐妖小红娘》","《时光代理人》","《罗小黑战记》"] },
+  { q:"syx最喜欢看的二创形式是？",         o:["手书","文本","漫画","剪辑"] },
+  { q:"syx最喜欢的制品形式是？",           o:["亚克力砖/流麻","纸片谷","亚克力立牌/挂件","色纸"] },
+  { q:"syx偏好的结局类型是？",             o:["HE","BE","OE"] },
+  { q:"syx看同人文偏好？",                 o:["原作向","平行au（如hp pa）","abo","经典文梗（如花吐症）"] }
+];
+
+const TOTAL = 10;
+const LETTERS = ["A","B","C","D"];
+const TIERS = [
+  { min:10, text:"？！全对？！你是不是视奸我的社媒了？" },
+  { min:9,  text:"我们是知己啊！" },
+  { min:5,  text:"syx的属性暴露无遗..." },
+  { min:0,  text:"果然这种问题答不上来才是人之常情！" }
+];
+
+/* ================= 工具 ================= */
+const $ = id => document.getElementById(id);
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+function tierOf(n){ return TIERS.find(t=>n>=t.min).text; }
+function getDeviceId(){
+  let id = localStorage.getItem("syx_quiz_device");
+  if(!id){ id = "d"+Date.now()+Math.random().toString(36).slice(2,8); localStorage.setItem("syx_quiz_device",id); }
+  return id;
+}
+const deviceId = getDeviceId();
+
+/* ================= 出题：随机抽10题、保持原顺序；每题取正确答案+2个干扰项并打乱 ================= */
+function buildQuiz(){
+  const picked = shuffle(BANK.map((item,idx)=>idx)).slice(0,TOTAL).sort((a,b)=>a-b);
+  return picked.map(idx=>{
+    const item = BANK[idx];
+    const wrong = shuffle(item.o.slice(1)).slice(0,2);   // 正确答案固定是原A
+    const opts = shuffle([item.o[0], ...wrong]);
+    return { q:item.q, opts, answer: item.o[0] };
+  });
+}
+
+/* ================= 游戏状态 ================= */
+let quiz = [], cur = 0, score = 0, playerName = "";
+
+function startQuiz(){
+  quiz = buildQuiz(); cur = 0; score = 0;
+  $("quiz-name").textContent = "答题人：" + playerName;
+  renderQuestion();
+  showScreen("screen-quiz");
+}
+
+function renderQuestion(){
+  const item = quiz[cur];
+  $("quiz-count").textContent = `第 ${cur+1} / ${TOTAL} 题`;
+  $("progress-fill").style.width = (cur/TOTAL*100) + "%";
+  $("question-text").textContent = item.q;
+  $("feedback").className = "feedback";
+  $("feedback").textContent = "";
+  const box = $("options");
+  box.innerHTML = "";
+  item.opts.forEach((text,i)=>{
+    const b = document.createElement("button");
+    b.className = "btn option";
+    b.dataset.value = text;
+    b.innerHTML = `<span class="letter">${LETTERS[i]}</span><span>${text}</span>`;
+    b.onclick = ()=>answer(b, text);
+    box.appendChild(b);
+  });
+}
+
+function answer(btn, text){
+  const item = quiz[cur];
+  const correct = text === item.answer;
+  if(correct) score++;
+  document.querySelectorAll(".option").forEach(b=>{
+    b.disabled = true;
+    if(b.dataset.value === item.answer){ b.classList.add("correct"); }
+    else if(b === btn){ b.classList.add("wrong"); }
+    else { b.classList.add("dim"); }
+  });
+  const fb = $("feedback");
+  fb.className = "feedback " + (correct ? "good" : "bad");
+  fb.textContent = correct ? "✅ 答对啦！" : `❌ 答错啦，正确答案：${item.answer}`;
+  setTimeout(()=>{
+    cur++;
+    if(cur >= TOTAL){ finishQuiz(); } else { renderQuestion(); }
+  }, 1500);
+}
+
+function finishQuiz(){
+  $("progress-fill").style.width = "100%";
+  $("result-score-num").textContent = score;
+  $("result-tier").textContent = tierOf(score);
+  $("result-name").textContent = `${playerName} 的战绩 · ${new Date().toLocaleDateString("zh-CN")}`;
+  localStorage.setItem("syx_quiz_done", JSON.stringify({ name:playerName, score:score }));
+  showScreen("screen-result");
+  submitScore();
+}
+
+/* ================= Supabase 云端排行榜 ================= */
+function supaReady(){ return !!(SUPA.url && SUPA.anonKey); }
+function supaHeaders(){
+  return {
+    "apikey": SUPA.anonKey,
+    "Authorization": "Bearer " + SUPA.anonKey,
+    "Content-Type": "application/json",
+    "Prefer": "return=minimal"
+  };
+}
+function supaUrl(path){ return SUPA.url.replace(/\/$/,"") + "/rest/v1" + path; }
+
+async function submitScore(){
+  if(!supaReady()){ saveLocal(); return; }
+  try{
+    const body = JSON.stringify({ name:playerName, score:score, device_id:deviceId, updated_at:new Date().toISOString() });
+    const patch = await fetch(supaUrl(`/scores?device_id=eq.${deviceId}`), { method:"PATCH", headers:supaHeaders(), body });
+    if(!patch.ok){ throw new Error("patch failed"); }
+    const check = await fetch(supaUrl(`/scores?device_id=eq.${deviceId}&select=device_id`), { headers:supaHeaders() });
+    const rows = (await check.json()) || [];
+    if(!rows.length){
+      await fetch(supaUrl("/scores"), { method:"POST", headers:supaHeaders(), body });
+    }
+  }catch(e){ saveLocal(); }
+}
+function saveLocal(){
+  try{
+    const list = JSON.parse(localStorage.getItem("syx_quiz_board")||"[]");
+    const i = list.findIndex(r=>r.deviceId===deviceId);
+    const row = { name:playerName, score:score, deviceId };
+    if(i>=0) list[i]=row; else list.push(row);
+    localStorage.setItem("syx_quiz_board", JSON.stringify(list));
+  }catch(e){}
+}
+
+async function loadBoard(){
+  const box = $("board-list");
+  if(supaReady()){
+    try{
+      const res = await fetch(supaUrl("/scores?select=name,score,device_id&order=score.desc,updated_at.desc&limit=100"), { headers:supaHeaders() });
+      if(!res.ok){ throw new Error("query failed"); }
+      const rows = await res.json();
+      renderBoard(rows.map(r=>({name:r.name, score:r.score, deviceId:r.device_id})));
+      return;
+    }catch(e){}
+  }
+  const local = JSON.parse(localStorage.getItem("syx_quiz_board")||"[]");
+  renderBoard(local.sort((a,b)=>b.score-a.score));
+}
+function renderBoard(rows){
+  const box = $("board-list");
+  if(!rows.length){ box.innerHTML = '<div class="board-empty">还没有人上榜，快去答题吧！</div>'; return; }
+  const medals = ["🥇","🥈","🥉"];
+  box.innerHTML = rows.map((r,i)=>{
+    const rank = i<3 ? medals[i] : (i+1);
+    return `<div class="board-row ${r.deviceId===deviceId?"me":""}">
+      <span class="board-rank">${rank}</span>
+      <span class="board-name">${escapeHtml(String(r.name||"路人"))}</span>
+      <span class="board-score">${r.score} 题</span>
+    </div>`;
+  }).join("");
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ================= 事件绑定 ================= */
+$("start-btn").onclick = ()=>{
+  const name = $("name-input").value.trim();
+  if(!name){ $("name-input").focus(); $("name-input").placeholder = "名字不能为空哦！"; return; }
+  playerName = name;
+  localStorage.setItem("syx_quiz_name", name);
+  startQuiz();
+};
+$("name-input").addEventListener("keydown", e=>{ if(e.key==="Enter") $("start-btn").click(); });
+$("board-btn").onclick = ()=>{ $("overlay").classList.add("show"); loadBoard(); };
+$("board-close").onclick = ()=>$("overlay").classList.remove("show");
+$("overlay").onclick = e=>{ if(e.target===$("overlay")) $("overlay").classList.remove("show"); };
+$("retry-btn").onclick = ()=>{ showScreen("screen-start"); $("name-input").value = playerName; };
+
+/* ================= 入口逻辑：答过一次的设备直接进结果页 ================= */
+(function init(){
+  const done = localStorage.getItem("syx_quiz_done");
+  if(done){
+    try{
+      const d = JSON.parse(done);
+      playerName = d.name || localStorage.getItem("syx_quiz_name") || "路人";
+      score = d.score;
+      $("result-score-num").textContent = score;
+      $("result-tier").textContent = tierOf(score);
+      $("result-name").textContent = `${playerName} 的战绩`;
+      showScreen("screen-result");
+    }catch(e){ showScreen("screen-start"); }
+  }else{
+    $("name-input").value = localStorage.getItem("syx_quiz_name") || "";
+    showScreen("screen-start");
+  }
+})();
+</script>
+</body>
+</html>
