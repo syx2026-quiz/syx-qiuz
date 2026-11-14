@@ -155,6 +155,7 @@
     padding:18px 16px;
   }
   .board-title { font-size:20px; font-weight:800; text-align:center; margin-bottom:12px; }
+  .board-note { display:none; font-size:11px; color:#c0455d; text-align:center; margin:-4px 0 10px; line-height:1.5; }
   .board-list { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
   .board-row {
     display:flex; align-items:center; gap:10px;
@@ -215,6 +216,7 @@
 <div id="overlay">
   <div class="board-panel sketch-card">
     <div class="board-title">🏆 全员排行榜</div>
+    <div class="board-note" id="board-note">⚠️ 云端暂时没连上，下面先显示本机记录；联网后重新打开本页会自动同步</div>
     <div class="board-list" id="board-list"><div class="board-empty">加载中…</div></div>
     <div class="board-close"><button class="btn" id="board-close">关闭</button></div>
   </div>
@@ -347,7 +349,7 @@ function finishQuiz(){
   $("result-score-num").textContent = score;
   $("result-tier").textContent = tierOf(score);
   $("result-name").textContent = `${playerName} 的战绩 · ${new Date().toLocaleDateString("zh-CN")}`;
-  localStorage.setItem("syx_quiz_done", JSON.stringify({ name:playerName, score:score }));
+  localStorage.setItem("syx_quiz_done", JSON.stringify({ name:playerName, score:score, detail:answerLog }));
   showScreen("screen-result");
   submitScore();
 }
@@ -375,7 +377,10 @@ async function submitScore(){
     if(!rows.length){
       await fetch(supaUrl("/scores"), { method:"POST", headers:supaHeaders(), body });
     }
-  }catch(e){ saveLocal(); }
+  }catch(e){
+    saveLocal();
+    setTimeout(()=>{ try{ submitScore(); }catch(_){} }, 8000);   // 8秒后自动重试一次
+  }
 }
 function saveLocal(){
   try{
@@ -387,6 +392,11 @@ function saveLocal(){
   }catch(e){}
 }
 
+function showBoardNote(on){
+  const n = $("board-note");
+  if(n) n.style.display = on ? "block" : "none";
+}
+
 async function loadBoard(){
   const box = $("board-list");
   if(supaReady()){
@@ -394,9 +404,10 @@ async function loadBoard(){
       const res = await fetch(supaUrl("/scores?select=name,score,device_id&order=score.desc,updated_at.desc&limit=100"), { headers:supaHeaders() });
       if(!res.ok){ throw new Error("query failed"); }
       const rows = await res.json();
+      showBoardNote(false);
       renderBoard(rows.map(r=>({name:r.name, score:r.score, deviceId:r.device_id})));
       return;
-    }catch(e){}
+    }catch(e){ showBoardNote(true); }
   }
   const local = JSON.parse(localStorage.getItem("syx_quiz_board")||"[]");
   renderBoard(local.sort((a,b)=>b.score-a.score));
@@ -441,7 +452,9 @@ $("retry-btn").onclick = ()=>{ showScreen("screen-start"); $("name-input").value
       $("result-score-num").textContent = score;
       $("result-tier").textContent = tierOf(score);
       $("result-name").textContent = `${playerName} 的战绩`;
+      answerLog = d.detail || [];
       showScreen("screen-result");
+      submitScore();   // 自愈机制：本地有成绩但云端没记录时，每次打开页面自动补传
     }catch(e){ showScreen("screen-start"); }
   }else{
     $("name-input").value = localStorage.getItem("syx_quiz_name") || "";
